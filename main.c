@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "matrix.h"
+#include "time.h"
 
 void print_matrix(char* name, matrix_2d* matrix) {
     printf("%s\n", name);
@@ -28,6 +29,8 @@ void print_matrix(char* name, matrix_2d* matrix) {
 }
 
 int main() {
+    clock_t start, end;
+    double cpu_time_used;
     int l = 2048;
     int m = 2048;
     int n = 2048;
@@ -41,7 +44,33 @@ int main() {
     matrix_random(A);
     matrix_random(B);
 
+    printf("NAIVE matmul starting...\n");
+    start = clock();
+    matrix_matmul(A, B, C, NAIVE);
+    end  = clock();
+    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    printf("NAIVE elapsed time: %f seconds\n", cpu_time_used);
+
+    printf("BLOCK matmul starting...\n");
+    start = clock();
+    matrix_matmul(A, B, C, BLOCK);
+    end  = clock();
+    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    printf("BLOCK elapsed time: %f seconds\n", cpu_time_used);
+
+    printf("AVX matmul starting...\n");
+    start = clock();
     matrix_matmul(A, B, C, AVX);
+    end  = clock();
+    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    printf("AVX elapsed time: %f seconds\n", cpu_time_used);
+
+    printf("GPU matmul starting...\n");
+    start = clock();
+    matrix_matmul(A, B, C, GPU);
+    end  = clock();
+    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    printf("GPU elapsed time: %f seconds\n", cpu_time_used);
 
     // double outValue = 0;
     // matrix2D_get_element(C, 0, 0, &outValue);
