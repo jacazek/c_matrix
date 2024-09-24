@@ -6,14 +6,12 @@
 void block_matmul(matrix_2d *A, matrix_2d *B, matrix_2d *C, int blockSize) {
     check_matrix_compatibility(A, B, C);
 
-
     // number of columns in matrix A (row) and rows in matrix B
     int m = A->x_length;
     // number of rows (column) in matrix A
     int l = A->y_length;
     // number of columns in matrix B
     int n = B->x_length;
-
 
     if (A->precision == DOUBLE) {
         double *A_data = A->data;

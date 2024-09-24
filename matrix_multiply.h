@@ -10,7 +10,15 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-      void matrix2D_gpu_matmul(matrix_2d *A, matrix_2d *B, matrix_2d *C);
+
+/**
+ * Multiply a matrix by sending the matrix to the GPU and parallelizing multiplication of every element in the matrix
+ * This code does not take into account whether the matrix fits in GPU memory.
+ * @param A Matrix A to multiply
+ * @param B Matrix B to multiply
+ * @param C Matrix in which result is accumulated
+ */
+void matrix2D_gpu_matmul(matrix_2d *A, matrix_2d *B, matrix_2d *C);
 #ifdef __cplusplus
 }
 #endif

@@ -60,13 +60,15 @@ void avx_matmul(matrix_2d *A, matrix_2d *B, matrix_2d *C) {
         }
 
         int blockSize = 8;
-        // for each block of elements in row of matrix A
+        // for each row of matrix A
         for (int a_row = 0; a_row < l; a_row++) {
-            // for each block of elements in column of matrix B
+            // for each column of matrix B
             for (int b_column = 0; b_column < n; b_column++) {
                 __m256i sum = _mm256_setzero_si256();
 
-                // for each element
+                // for each block in row/column of A/B
+                // block here is of length 256
+                // only works on CPUs with AVX2 instruction set available
                 for (int block = 0; block < m; block += blockSize) {
                     // load blocksize sub-vectors of each matrix
                     __m256i avx_a = _mm256_loadu_si256((__m256i*)&A_data[a_row * m + block]);
