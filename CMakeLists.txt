@@ -35,7 +35,7 @@ link_directories(${EXTERNAL_INSTALL_LOCATION}/lib64)
 
 
 ##### CUDA matrix multiply static library (archive)
-add_library(gpu_matrix_multiply matrix_multiply.cu)
+add_library(gpu_matrix_multiply gpu_matrix_multiply.cu)
 target_link_libraries(gpu_matrix_multiply PRIVATE cuda cudart)
 
 ##### AVX matrix multiply static library (archive)
@@ -44,7 +44,7 @@ add_library(avx_matrix_multiply avx_matrix_multiply.c)
 ##### BLOCK matrix multiply static library (archive)
 add_library(block_matrix_multiply block_matrix_multiply.c)
 
-##### AVX matrix multiply static library (archive)
+##### NAIVE matrix multiply static library (archive)
 add_library(naive_matrix_multiply naive_matrix_multiply.c)
 
 ##### Matrix main executable

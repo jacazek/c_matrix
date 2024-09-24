@@ -2,7 +2,7 @@
 // Created by jacob on 9/23/24.
 //
 #include <stdio.h>
-#include "matrix_multiply.h"
+#include "gpu_matrix_multiply.h"
 #include "cuda_runtime.h"
 
 #define N 3  // Size of the matrices

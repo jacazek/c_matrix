@@ -4,7 +4,7 @@
 
 #include "matrix.h"
 #include <stdio.h>
-#include "matrix_multiply.h"
+#include "gpu_matrix_multiply.h"
 #include "avx_matrix_multiply.h"
 #include "block_matrix_multiply.h"
 #include "naive_matrix_multiply.h"
