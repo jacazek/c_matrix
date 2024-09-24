@@ -43,7 +43,7 @@ __host__ void matrixMultiply(matrix_2d *A, matrix_2d *B, matrix_2d *C) {
     cudaMemcpy(d_B, B->data, B_size, cudaMemcpyHostToDevice);
 
     // matrix multiply
-    dim3 threadsPerBlock(16, 16);
+    dim3 threadsPerBlock(128, 128);
     dim3 numBlocks((n + threadsPerBlock.x - 1) / threadsPerBlock.x,
                    (l + threadsPerBlock.y - 1) / threadsPerBlock.y);
     matrixMultiplyKernel<<<numBlocks, threadsPerBlock>>>(d_A, d_B, d_C, l, m, n);
