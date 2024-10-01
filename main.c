@@ -113,7 +113,7 @@ int main() {
     int m = 2048;
     int n = 2048;
     int size = 3;
-    MatrixPrecision precision = DOUBLE;
+    MatrixPrecision precision = INT;
     matrix_2d *A = matrix2D_new(precision, m, l);
     matrix_2d *B = matrix2D_new(precision, n, m);
     // matrix_2d *C = matrix2D_new(precision, B->x_length, A->y_length);
@@ -126,12 +126,25 @@ int main() {
         .A = A,
         .B = B,
     };
-    pthread_t threads[4];
+    int number_of_threads = 2;
+#ifdef AVX_SUPPORT
+    number_of_threads++;
+#endif
+#ifdef CUDA_SUPPORT
+    number_of_threads++;
+#endif
+
+    pthread_t threads[number_of_threads];
     pthread_create(&threads[0], NULL, run_naive_test, &thread_data);
     pthread_create(&threads[1], NULL, run_block_test, &thread_data);
+#ifdef AVX_SUPPORT
     pthread_create(&threads[2], NULL, run_avx_test, &thread_data);
+#endif
+#ifdef CUDA_SUPPORT
     pthread_create(&threads[3], NULL, run_gpu_test, &thread_data);
-    for (int i = 0; i < 4; i++) {
+#endif
+
+    for (int i = 0; i < number_of_threads; i++) {
         pthread_join(threads[i], NULL);
     }
     //

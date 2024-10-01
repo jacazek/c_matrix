@@ -4,7 +4,6 @@
 #include "stdio.h"
 #include "unity/unity.h"
 #include "matrix.h"
-#include "gpu_matrix_multiply.h"
 
 double A_data[] = {
     0.38300, -0.35100, -0.46000, 0.78200, -0.97800, -0.77100, -0.68500, -0.13800, -0.11400, 0.42100, 0.42600, 0.53000,
@@ -152,6 +151,7 @@ void block_matmul_float_works_correctly() {
     TEST_ASSERT_FLOAT_ARRAY_WITHIN(.0001, C_data_float, C_float->data, C_float->y_length * C_float->x_length);
 }
 
+#ifdef AVX_SUPPORT
 void simd_int_matmul_works_correctly() {
     matrix_matmul(A, B, C, AVX);
     //    int data[] = {-17221, -468072, 696172, 795056, 232591, 653281, -392070, -349754};
@@ -167,7 +167,9 @@ void simd_matmul_float_works_correctly() {
     matrix_matmul(A_float, B_float, C_float, AVX);
     TEST_ASSERT_FLOAT_ARRAY_WITHIN(.0001, C_data_float, C_float->data, C_float->y_length * C_float->x_length);
 }
+#endif
 
+#ifdef CUDA_SUPPORT
 void gpu_int_matmul_works_correctly() {
     matrix_matmul(A, B, C, GPU);
     //    int data[] = {-17221, -468072, 696172, 795056, 232591, 653281, -392070, -349754};
@@ -183,6 +185,7 @@ void gpu_matmul_float_works_correctly() {
     matrix_matmul(A_float, B_float, C_float, GPU);
     TEST_ASSERT_FLOAT_ARRAY_WITHIN(.0001, C_data_float, C_float->data, C_float->y_length * C_float->x_length);
 }
+#endif
 
 void transpose_works() {
     int size = 3;
@@ -225,12 +228,16 @@ int main() {
     RUN_TEST(block_matmul_works_correctly);
     RUN_TEST(block_matmul_double_works_correctly);
     RUN_TEST(block_matmul_float_works_correctly);
+#ifdef AVX_SUPPORT
     RUN_TEST(simd_matmul_double_works_correctly);
     RUN_TEST(simd_int_matmul_works_correctly);
     RUN_TEST(simd_matmul_float_works_correctly);
+#endif
+#ifdef CUDA_SUPPORT
     RUN_TEST(gpu_int_matmul_works_correctly);
     RUN_TEST(gpu_matmul_double_works_correctly);
     RUN_TEST(gpu_matmul_float_works_correctly);
+#endif
     RUN_TEST(transpose_works);
     RUN_TEST(transpose_double_works);
     return UNITY_END();

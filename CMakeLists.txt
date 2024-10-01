@@ -4,10 +4,10 @@ enable_testing()
 set(CMAKE_CUDA_STANDARD 17)
 set(CMAKE_CUDA_ARCHITECTURES "70;89")
 
-message(STATUS $ENV{LD_LIBRARY_PATH})
-# enable SIMD instructions for CPU
-add_compile_options(-mavx2 -mavxifma -mavxvnni -march=znver3 -mtune=znver3)
+option(CUDA_SUPPORT "Enable CUDA support" ON)
+option(AVX_SUPPORT "Enable AVX support" ON)
 
+message(STATUS $ENV{LD_LIBRARY_PATH})
 include(ExternalProject)
 
 # define the external dependency location
@@ -34,12 +34,28 @@ include_directories(${EXTERNAL_INSTALL_LOCATION}/include)
 link_directories(${EXTERNAL_INSTALL_LOCATION}/lib64)
 
 
-##### CUDA matrix multiply static library (archive)
-add_library(gpu_matrix_multiply gpu_matrix_multiply.cu)
-target_link_libraries(gpu_matrix_multiply PRIVATE cuda cudart)
+if (CUDA_SUPPORT)
+    message(STATUS "CUDA SUPPORT ENABLED")
+    # provide flag to code enabling GPU support
+    add_definitions(-DCUDA_SUPPORT)
+    ##### CUDA matrix multiply static library (archive)
+    add_library(gpu_matrix_multiply gpu_matrix_multiply.cu)
+    target_link_libraries(gpu_matrix_multiply PRIVATE cuda cudart)
+else ()
+    message(STATUS "CUDA SUPPORT DISABLED")
+endif ()
 
-##### AVX matrix multiply static library (archive)
-add_library(avx_matrix_multiply avx_matrix_multiply.c)
+if (AVX_SUPPORT)
+    message(STATUS "AVX SUPPORT ENABLED")
+    # enable SIMD instructions for CPU
+    add_compile_options(-mavx2 -mavxifma -mavxvnni -march=znver3 -mtune=znver3)
+    # provide flag to code enabling avx support
+    add_definitions(-DAVX_SUPPORT)
+    ##### AVX matrix multiply static library (archive)
+    add_library(avx_matrix_multiply avx_matrix_multiply.c)
+else ()
+    message(STATUS "AVX SUPPORT DISABLED")
+endif ()
 
 ##### BLOCK matrix multiply static library (archive)
 add_library(block_matrix_multiply block_matrix_multiply.c)
@@ -53,20 +69,29 @@ add_executable(matrix main.c
         matrix.c)
 add_dependencies(matrix
         naive_matrix_multiply
-        block_matrix_multiply
-        avx_matrix_multiply
-        gpu_matrix_multiply)
+        block_matrix_multiply)
 target_link_libraries(matrix
         naive_matrix_multiply
-        block_matrix_multiply
-        avx_matrix_multiply
-        gpu_matrix_multiply
-        cudart)
-# enable cuda support
-set_target_properties(matrix PROPERTIES
-        CUDA_SEPARABLE_COMPILATION ON  # For separable compilation (optional)
-        BUILD_RPATH "/usr/local/cuda/lib64"
-)
+        block_matrix_multiply)
+if (CUDA_SUPPORT)
+    add_dependencies(matrix
+            gpu_matrix_multiply)
+    target_link_libraries(matrix
+            gpu_matrix_multiply
+            cudart)
+    # enable cuda support
+    set_target_properties(matrix PROPERTIES
+            CUDA_SEPARABLE_COMPILATION ON  # For separable compilation (optional)
+            BUILD_RPATH "/usr/local/cuda/lib64"
+    )
+endif ()
+
+if (AVX_SUPPORT)
+    add_dependencies(matrix
+            avx_matrix_multiply)
+    target_link_libraries(matrix
+            avx_matrix_multiply)
+endif ()
 
 
 ##### Matrix test exectutable #####
@@ -76,23 +101,33 @@ add_executable(matrix_test matrix_test.c matrix.c)
 add_dependencies(matrix_test
         naive_matrix_multiply
         block_matrix_multiply
-        avx_matrix_multiply
-        gpu_matrix_multiply
         unity)
 target_include_directories(matrix_test PUBLIC ${EXTERNAL_INSTALL_LOCATION}/include)
 target_link_libraries(matrix_test
         naive_matrix_multiply
         block_matrix_multiply
-        avx_matrix_multiply
-        gpu_matrix_multiply
-        cudart
         ${EXTERNAL_INSTALL_LOCATION}/lib64/libunity.a)
 
-# also tell matrix_test to compile with the test case and double precision support
-target_compile_definitions(matrix_test PUBLIC -DUNITY_SUPPORT_TEST_CASES -DUNITY_SUPPORT_VARIADIC_MACROS -DUNITY_INCLUDE_DOUBLE -DUNITY_DOUBLE_PRECISION=1e-12f)
+if (CUDA_SUPPORT)
+    add_definitions(-DCUDA_SUPPORT)
+    add_dependencies(matrix_test
+            gpu_matrix_multiply)
+    target_link_libraries(matrix_test
+            gpu_matrix_multiply
+            cudart)
+    # enable cuda support
+    set_target_properties(matrix_test PROPERTIES
+            CUDA_SEPARABLE_COMPILATION ON  # For separable compilation (optional)
+            BUILD_RPATH "/usr/local/cuda/lib64"
+    )
+endif ()
 
-# enable cuda support
-set_target_properties(matrix_test PROPERTIES
-        CUDA_SEPARABLE_COMPILATION ON  # For separable compilation (optional)
-        BUILD_RPATH "/usr/local/cuda/lib64"
-)
+if (AVX_SUPPORT)
+    add_dependencies(matrix_test
+            avx_matrix_multiply)
+    target_link_libraries(matrix_test
+            avx_matrix_multiply)
+endif ()
+
+# also tell matrix_test to compile with the test case and double precision support
+target_compile_definitions(matrix_test PUBLIC -DUNITY_INCLUDE_DOUBLE -DUNITY_DOUBLE_PRECISION=1e-12f)

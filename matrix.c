@@ -4,8 +4,12 @@
 
 #include "matrix.h"
 #include <stdio.h>
+#ifdef CUDA_SUPPORT
 #include "gpu_matrix_multiply.h"
+#endif
+#ifdef AVX_SUPPORT
 #include "avx_matrix_multiply.h"
+#endif
 #include "block_matrix_multiply.h"
 #include "naive_matrix_multiply.h"
 #define BLOCK_SIZE 64
@@ -124,14 +128,18 @@ void matrix_matmul(matrix_2d *A, matrix_2d *B, matrix_2d *C, MatmulStrategy stra
             naive_matmul(A, B, C);
             break;
         case BLOCK:
-            block_matmul(A, B, C, 32);
+            block_matmul(A, B, C, 64);
             break;
+#ifdef AVX_SUPPORT
         case AVX:
             avx_matmul(A, B, C);
             break;
+#endif
+#ifdef CUDA_SUPPORT
         case GPU:
             matrix2D_gpu_matmul(A, B, C);
             break;
+#endif
     }
 }
 
