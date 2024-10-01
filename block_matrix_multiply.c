@@ -3,6 +3,7 @@
 //
 
 #include "block_matrix_multiply.h"
+
 void block_matmul(matrix_2d *A, matrix_2d *B, matrix_2d *C, int blockSize) {
     check_matrix_compatibility(A, B, C);
 
@@ -35,7 +36,7 @@ void block_matmul(matrix_2d *A, matrix_2d *B, matrix_2d *C, int blockSize) {
                     // for each element in matrix A block
                     for (int y = yy; y < yy + blockSize && y < l; y++) {
                         for (int x = xx; x < xx + blockSize && x < n; x++) {
-                            double sum = C_data[y * n + x];  // Start with current value in C
+                            double sum = C_data[y * n + x]; // Start with current value in C
                             for (int z = zz; z < zz + blockSize && z < m; z++) {
                                 sum += A_data[y * m + z] * B_data[z * n + x];
                             }
@@ -67,7 +68,7 @@ void block_matmul(matrix_2d *A, matrix_2d *B, matrix_2d *C, int blockSize) {
                     // for each element in matrix A block
                     for (int y = yy; y < yy + blockSize && y < l; y++) {
                         for (int x = xx; x < xx + blockSize && x < n; x++) {
-                            float sum = C_data[y * n + x];  // Start with current value in C
+                            float sum = C_data[y * n + x]; // Start with current value in C
                             for (int z = zz; z < zz + blockSize && z < m; z++) {
                                 sum += A_data[y * m + z] * B_data[z * n + x];
                             }
@@ -98,7 +99,7 @@ void block_matmul(matrix_2d *A, matrix_2d *B, matrix_2d *C, int blockSize) {
                     // for each element in matrix A block
                     for (int y = yy; y < yy + blockSize && y < l; y++) {
                         for (int x = xx; x < xx + blockSize && x < n; x++) {
-                            int sum = C_data[y * n + x];  // Start with current value in C
+                            int sum = C_data[y * n + x]; // Start with current value in C
                             for (int z = zz; z < zz + blockSize && z < m; z++) {
                                 sum += A_data[y * m + z] * B_data[z * n + x];
                             }

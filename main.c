@@ -3,7 +3,7 @@
 #include "matrix.h"
 #include "time.h"
 
-void print_matrix(char* name, matrix_2d* matrix) {
+void print_matrix(char *name, matrix_2d *matrix) {
     printf("%s\n", name);
     printf("[");
     if (matrix->precision == DOUBLE) {
@@ -45,9 +45,9 @@ int main() {
     int n = 4;
     int size = 3;
     MatrixPrecision precision = DOUBLE;
-    matrix_2d * A = matrix2D_new(precision, m, l);
-    matrix_2d * B = matrix2D_new(precision, n, m);
-    matrix_2d * C = matrix2D_new(precision, B->x_length, A->y_length);
+    matrix_2d *A = matrix2D_new(precision, m, l);
+    matrix_2d *B = matrix2D_new(precision, n, m);
+    matrix_2d *C = matrix2D_new(precision, B->x_length, A->y_length);
 
     srand(1);
     matrix_random(A);
@@ -77,7 +77,7 @@ int main() {
     printf("GPU matmul starting...\n");
     start = clock();
     matrix_matmul(A, B, C, GPU);
-    end  = clock();
+    end = clock();
     cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
     printf("GPU elapsed time: %f seconds\n", cpu_time_used);
 

@@ -6,7 +6,7 @@
 #include "cuda_runtime.h"
 
 // CUDA kernel function for matrix multiplication
-template <typename T>
+template<typename T>
 __global__ void matrixMultiplyKernel(T *A, T *B, T *C, int l, int m, int n) {
     int row = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
@@ -21,7 +21,7 @@ __global__ void matrixMultiplyKernel(T *A, T *B, T *C, int l, int m, int n) {
     }
 }
 
-template <typename T>
+template<typename T>
 __host__ void matrixMultiply(matrix_2d *A, matrix_2d *B, matrix_2d *C) {
     // number of columns in matrix A (row) and rows in matrix B
     int m = A->x_length;
@@ -30,7 +30,7 @@ __host__ void matrixMultiply(matrix_2d *A, matrix_2d *B, matrix_2d *C) {
     // number of columns in matrix B
     int n = B->x_length;
 
-    int A_size = (A->x_length * A->y_length) *  sizeof(T);
+    int A_size = (A->x_length * A->y_length) * sizeof(T);
     printf("Data size: %i\n", A->data_size);
     int B_size = (B->x_length * B->y_length) * sizeof(T);
     int C_size = (C->x_length * C->y_length) * sizeof(T);
@@ -42,11 +42,11 @@ __host__ void matrixMultiply(matrix_2d *A, matrix_2d *B, matrix_2d *C) {
     if (result != cudaSuccess) {
         printf("CudaMalloc failed: %s\n", cudaGetErrorString(result));
     }
-    result =cudaMalloc((void **) &d_B, B_size);
+    result = cudaMalloc((void **) &d_B, B_size);
     if (result != cudaSuccess) {
         printf("CudaMalloc failed: %s\n", cudaGetErrorString(result));
     }
-    result =cudaMalloc((void**) &d_C, C_size);
+    result = cudaMalloc((void **) &d_C, C_size);
     if (result != cudaSuccess) {
         printf("CudaMalloc failed: %s\n", cudaGetErrorString(result));
     }
@@ -55,7 +55,7 @@ __host__ void matrixMultiply(matrix_2d *A, matrix_2d *B, matrix_2d *C) {
     if (result != cudaSuccess) {
         printf("CudaMalloc failed: %s\n", cudaGetErrorString(result));
     }
-    result =cudaMemcpy(d_B, B->data, B_size, cudaMemcpyHostToDevice);
+    result = cudaMemcpy(d_B, B->data, B_size, cudaMemcpyHostToDevice);
     if (result != cudaSuccess) {
         printf("CudaMalloc failed: %s\n", cudaGetErrorString(result));
     }

@@ -4,6 +4,7 @@
 
 #include "avx_matrix_multiply.h"
 #include "immintrin.h"
+
 void avx_matmul(matrix_2d *A, matrix_2d *B, matrix_2d *C) {
     check_matrix_compatibility(A, B, C);
     matrix2D_transpose(B);
@@ -77,7 +78,8 @@ void avx_matmul(matrix_2d *A, matrix_2d *B, matrix_2d *C) {
                 }
                 float result[blockSize];
                 _mm256_storeu_ps(result, sum);
-                C_data[a_row * n + b_column] = result[0] + result[1] + result[2] + result[3] + result[4] + result[5] + result[6] + result[7];
+                C_data[a_row * n + b_column] = result[0] + result[1] + result[2] + result[3] + result[4] + result[5] +
+                                               result[6] + result[7];
             }
         }
     } else if (A->precision == INT) {
@@ -103,8 +105,8 @@ void avx_matmul(matrix_2d *A, matrix_2d *B, matrix_2d *C) {
                 // only works on CPUs with AVX2 instruction set available
                 for (int block = 0; block < m; block += blockSize) {
                     // load blocksize sub-vectors of each matrix
-                    __m256i avx_a = _mm256_loadu_si256((__m256i*)&A_data[a_row * m + block]);
-                    __m256i avx_b = _mm256_loadu_si256((__m256i*)&B_data[b_column * m + block]);
+                    __m256i avx_a = _mm256_loadu_si256((__m256i *) &A_data[a_row * m + block]);
+                    __m256i avx_b = _mm256_loadu_si256((__m256i *) &B_data[b_column * m + block]);
 
                     // multiply the two vectors of integers (elementwise)
                     __m256i product = _mm256_mullo_epi32(avx_a, avx_b);
@@ -114,8 +116,9 @@ void avx_matmul(matrix_2d *A, matrix_2d *B, matrix_2d *C) {
                 }
                 // roll the results up to single element
                 int result[blockSize];
-                _mm256_storeu_si256((__m256i*)result, sum);
-                C_data[a_row * n + b_column] = result[0] + result[1] + result[2] + result[3] + result[4] + result[5] + result[6] + result[7];
+                _mm256_storeu_si256((__m256i *) result, sum);
+                C_data[a_row * n + b_column] = result[0] + result[1] + result[2] + result[3] + result[4] + result[5] +
+                                               result[6] + result[7];
             }
         }
     }
