@@ -25,6 +25,20 @@ void naive_matmul(matrix_2d *A, matrix_2d *B, matrix_2d *C) {
                 }
             }
         }
+    } else if (A->precision == FLOAT) {
+        float *A_data = A->data;
+        float *B_data = B->data;
+        float *C_data = C->data;
+
+        for (int y = 0; y < l; y++) {
+            for (int x = 0; x < n; x++) {
+                int c_index = y * n + x;
+                C_data[c_index] = 0.0;
+                for (int z = 0; z < m; z++) {
+                    C_data[c_index] += A_data[y * m + z] * B_data[z * n + x];
+                }
+            }
+        }
     } else if (A->precision == INT) {
         int *A_data = A->data;
         int *B_data = B->data;

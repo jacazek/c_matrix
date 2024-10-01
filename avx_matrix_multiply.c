@@ -48,6 +48,38 @@ void avx_matmul(matrix_2d *A, matrix_2d *B, matrix_2d *C) {
                 C_data[a_row * n + b_column] = result[0] + result[1] + result[2] + result[3];
             }
         }
+    } else if (A->precision == FLOAT) {
+        float *A_data = A->data;
+        float *B_data = B->data;
+        float *C_data = C->data;
+
+        // zero the output matrix
+        for (int i = 0; i < l; i++) {
+            for (int j = 0; j < n; j++) {
+                C_data[i * n + j] = 0.0;
+            }
+        }
+        int blockSize = 4;
+        // for each block of elements in row of matrix A
+        for (int a_row = 0; a_row < l; a_row++) {
+            // for each block of elements in column of matrix B
+            for (int b_column = 0; b_column < n; b_column++) {
+                __m256 sum = _mm256_setzero_ps();
+
+                // for each element
+                for (int block = 0; block < m; block += blockSize) {
+                    // Multiply sub-blocks
+                    // for each element in matrix A block
+                    __m256 avx_a = _mm256_loadu_ps(&A_data[a_row * m + block]);
+                    __m256 avx_b = _mm256_loadu_ps(&B_data[block * n + b_column]);
+
+                    sum = _mm256_fmadd_ps(avx_a, avx_b, sum);
+                }
+                float result[blockSize];
+                _mm256_storeu_ps(result, sum);
+                C_data[a_row * n + b_column] = result[0] + result[1] + result[2] + result[3] + result[4] + result[5] + result[6] + result[7];
+            }
+        }
     } else if (A->precision == INT) {
         int *A_data = A->data;
         int *B_data = B->data;

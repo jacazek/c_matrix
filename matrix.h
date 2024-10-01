@@ -10,7 +10,8 @@
 
 typedef enum MATRIX_PRECISION {
     INT,
-    DOUBLE
+    DOUBLE,
+    FLOAT
 } MatrixPrecision;
 
 typedef enum MATMUL_STRATEGY {

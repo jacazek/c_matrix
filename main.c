@@ -15,6 +15,15 @@ void print_matrix(char* name, matrix_2d* matrix) {
             }
             if (i < matrix->x_length - 1) printf(";");
         }
+    } else if (matrix->precision == FLOAT) {
+        for (int i = 0; i < matrix->y_length; i++) {
+            for (int j = 0; j < matrix->x_length; j++) {
+                float value;
+                matrix2D_get_element(matrix, j, i, &value);
+                printf("%.5f%s", value, j < matrix->x_length - 1 ? "," : "");
+            }
+            if (i < matrix->x_length - 1) printf(";");
+        }
     } else if (matrix->precision == INT) {
         for (int i = 0; i < matrix->y_length; i++) {
             for (int j = 0; j < matrix->x_length; j++) {
@@ -31,9 +40,9 @@ void print_matrix(char* name, matrix_2d* matrix) {
 int main() {
     clock_t start, end;
     double cpu_time_used;
-    int l = 2048;
-    int m = 2048;
-    int n = 2048;
+    int l = 4;
+    int m = 4;
+    int n = 4;
     int size = 3;
     MatrixPrecision precision = DOUBLE;
     matrix_2d * A = matrix2D_new(precision, m, l);
@@ -43,27 +52,27 @@ int main() {
     srand(1);
     matrix_random(A);
     matrix_random(B);
-
-    printf("NAIVE matmul starting...\n");
-    start = clock();
-    matrix_matmul(A, B, C, NAIVE);
-    end  = clock();
-    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-    printf("NAIVE elapsed time: %f seconds\n", cpu_time_used);
-
-    printf("BLOCK matmul starting...\n");
-    start = clock();
-    matrix_matmul(A, B, C, BLOCK);
-    end  = clock();
-    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-    printf("BLOCK elapsed time: %f seconds\n", cpu_time_used);
-
-    printf("AVX matmul starting...\n");
-    start = clock();
-    matrix_matmul(A, B, C, AVX);
-    end  = clock();
-    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-    printf("AVX elapsed time: %f seconds\n", cpu_time_used);
+    //
+    // printf("NAIVE matmul starting...\n");
+    // start = clock();
+    // matrix_matmul(A, B, C, NAIVE);
+    // end  = clock();
+    // cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    // printf("NAIVE elapsed time: %f seconds\n", cpu_time_used);
+    //
+    // printf("BLOCK matmul starting...\n");
+    // start = clock();
+    // matrix_matmul(A, B, C, BLOCK);
+    // end  = clock();
+    // cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    // printf("BLOCK elapsed time: %f seconds\n", cpu_time_used);
+    //
+    // printf("AVX matmul starting...\n");
+    // start = clock();
+    // matrix_matmul(A, B, C, AVX);
+    // end  = clock();
+    // cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    // printf("AVX elapsed time: %f seconds\n", cpu_time_used);
 
     printf("GPU matmul starting...\n");
     start = clock();
@@ -76,9 +85,9 @@ int main() {
     // matrix2D_get_element(C, 0, 0, &outValue);
 
     // printf("Hello, World! %0.6f\n", outValue);
-//    print_matrix("A", A);
-//    print_matrix("B", B);
-//    print_matrix("C", C);
+    print_matrix("A", A);
+    print_matrix("B", B);
+    print_matrix("C", C);
 
     matrix2D_destroy(&A);
     matrix2D_destroy(&B);
