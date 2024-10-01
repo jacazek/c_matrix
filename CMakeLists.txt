@@ -23,7 +23,7 @@ ExternalProject_Add(unity
         -DCMAKE_INSTALL_PREFIX=${EXTERNAL_INSTALL_LOCATION}
         # compile unity with test case and double precision support
         # currently not working.... need to figure it out
-        -DCMAKE_C_FLAGS="-DUNITY_SUPPORT_TEST_CASES -DUNITY_SUPPORT_VARIADIC_MACROS -DUNITY_INCLUDE_DOUBLE -DUNITY_DOUBLE_PRECISION=1e-12f"
+        -DCMAKE_C_FLAGS="-DUNITY_INCLUDE_DOUBLE -DUNITY_DOUBLE_PRECISION=1e-12f"
         # specifying the expected output causes the external project to be built before satisfying the dependency
         BUILD_BYPRODUCTS ${EXTERNAL_INSTALL_LOCATION}/lib64/libunity.a
 )

@@ -31,7 +31,6 @@ __host__ void matrixMultiply(matrix_2d *A, matrix_2d *B, matrix_2d *C) {
     int n = B->x_length;
 
     int A_size = (A->x_length * A->y_length) * sizeof(T);
-    printf("Data size: %i\n", A->data_size);
     int B_size = (B->x_length * B->y_length) * sizeof(T);
     int C_size = (C->x_length * C->y_length) * sizeof(T);
 

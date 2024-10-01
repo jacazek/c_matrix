@@ -7,6 +7,11 @@
 
 void avx_matmul(matrix_2d *A, matrix_2d *B, matrix_2d *C) {
     check_matrix_compatibility(A, B, C);
+    // transpose the second matrix so that column values are sequential in memory
+    // AVX instructions load sequential blocks of memory into registers. Since matrices
+    // are by default row major (row values sequential), we transpose the second matrix as
+    // matrix multiplication multiplies rows of A with columns of B.  Transposing makes the
+    // matrix B column values sequential in memory and able to load into AVX registers.
     matrix2D_transpose(B);
 
     // number of columns in matrix A (row) and rows in matrix B
@@ -29,18 +34,20 @@ void avx_matmul(matrix_2d *A, matrix_2d *B, matrix_2d *C) {
             }
         }
         int blockSize = 4;
-        // for each block of elements in row of matrix A
+        // for row of matrix A
         for (int a_row = 0; a_row < l; a_row++) {
-            // for each block of elements in column of matrix B
+            // for column of matrix B
             for (int b_column = 0; b_column < n; b_column++) {
                 __m256d sum = _mm256_setzero_pd();
 
-                // for each element
+                // for each block in row/column of A/B
+                // block here is of length 256
+                // only works on CPUs with AVX2 instruction set available
                 for (int block = 0; block < m; block += blockSize) {
                     // Multiply sub-blocks
                     // for each element in matrix A block
                     __m256d avx_a = _mm256_loadu_pd(&A_data[a_row * m + block]);
-                    __m256d avx_b = _mm256_loadu_pd(&B_data[block * n + b_column]);
+                    __m256d avx_b = _mm256_loadu_pd(&B_data[b_column * m + block]);
 
                     sum = _mm256_fmadd_pd(avx_a, avx_b, sum);
                 }
@@ -60,19 +67,21 @@ void avx_matmul(matrix_2d *A, matrix_2d *B, matrix_2d *C) {
                 C_data[i * n + j] = 0.0;
             }
         }
-        int blockSize = 4;
-        // for each block of elements in row of matrix A
+        int blockSize = 8;
+        // for each row of matrix A
         for (int a_row = 0; a_row < l; a_row++) {
-            // for each block of elements in column of matrix B
+            // for each column of matrix B
             for (int b_column = 0; b_column < n; b_column++) {
                 __m256 sum = _mm256_setzero_ps();
 
-                // for each element
+                // for each block in row/column of A/B
+                // block here is of length 256
+                // only works on CPUs with AVX2 instruction set available
                 for (int block = 0; block < m; block += blockSize) {
                     // Multiply sub-blocks
                     // for each element in matrix A block
                     __m256 avx_a = _mm256_loadu_ps(&A_data[a_row * m + block]);
-                    __m256 avx_b = _mm256_loadu_ps(&B_data[block * n + b_column]);
+                    __m256 avx_b = _mm256_loadu_ps(&B_data[b_column * m + block]);
 
                     sum = _mm256_fmadd_ps(avx_a, avx_b, sum);
                 }
