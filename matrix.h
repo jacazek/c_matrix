@@ -39,6 +39,8 @@ void matrix2D_get_element(matrix_2d *matrix, size_t x, size_t y, void *data);
 
 void matrix2D_set_element(matrix_2d *matrix, size_t x, size_t y, void *data);
 
+matrix_2d *matrix2D_copy(const matrix_2d *matrix);
+
 void matrix2D_fill(matrix_2d *matrix, void *data_array);
 
 void matrix_random(matrix_2d *matrix);

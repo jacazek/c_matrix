@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.26)
 project(matrix CUDA C)
 enable_testing()
 set(CMAKE_CUDA_STANDARD 17)
-set(CMAKE_CUDA_ARCHITECTURES "89")
+set(CMAKE_CUDA_ARCHITECTURES "70;89")
 
 message(STATUS $ENV{LD_LIBRARY_PATH})
 # enable SIMD instructions for CPU

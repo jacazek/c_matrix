@@ -68,6 +68,19 @@ void matrix2D_set_element(matrix_2d *matrix, size_t x, size_t y, void *data) {
     }
 }
 
+matrix_2d *matrix2D_copy(const matrix_2d *matrix) {
+    void *copy_data = malloc(matrix->data_size * matrix->x_length * matrix->y_length);
+    memcpy(copy_data, matrix->data, matrix->data_size);
+
+    matrix_2d *copy_matrix = malloc(sizeof(matrix_2d));
+    copy_matrix->precision = matrix->precision;
+    copy_matrix->x_length = matrix->x_length;
+    copy_matrix->y_length = matrix->y_length;
+    copy_matrix->data_size = matrix->data_size;
+    copy_matrix->data = copy_data;
+    return copy_matrix;
+}
+
 void matrix_random(matrix_2d *matrix) {
     switch (matrix->precision) {
         case INT:
