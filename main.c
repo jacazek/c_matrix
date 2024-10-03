@@ -113,7 +113,7 @@ int main() {
     int m = 2048;
     int n = 2048;
     int size = 3;
-    MatrixPrecision precision = INT;
+    MatrixPrecision precision = DOUBLE;
     matrix_2d *A = matrix2D_new(precision, m, l);
     matrix_2d *B = matrix2D_new(precision, n, m);
     // matrix_2d *C = matrix2D_new(precision, B->x_length, A->y_length);

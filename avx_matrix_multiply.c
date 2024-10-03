@@ -39,11 +39,12 @@ void avx_matmul(matrix_2d *A, matrix_2d *B, matrix_2d *C) {
             // for column of matrix B
             for (int b_column = 0; b_column < n; b_column++) {
                 __m256d sum = _mm256_setzero_pd();
+                int nonBlockElements = m % blockSize;
 
                 // for each block in row/column of A/B
                 // block here is of length 256
                 // only works on CPUs with AVX2 instruction set available
-                for (int block = 0; block < m; block += blockSize) {
+                for (int block = 0; block <= m - blockSize; block += blockSize) {
                     // Multiply sub-blocks
                     // for each element in matrix A block
                     __m256d avx_a = _mm256_loadu_pd(&A_data[a_row * m + block]);
@@ -51,9 +52,18 @@ void avx_matmul(matrix_2d *A, matrix_2d *B, matrix_2d *C) {
 
                     sum = _mm256_fmadd_pd(avx_a, avx_b, sum);
                 }
+
+                double remainder = 0.0;
+                if (nonBlockElements) {
+                    // accumulate the remaining iteratively
+                    for (int element = m - nonBlockElements; element < m; element++) {
+                        remainder += A_data[a_row * m + element] * B_data[b_column * m + element];
+                    }
+                }
+
                 double result[blockSize];
                 _mm256_storeu_pd(result, sum);
-                C_data[a_row * n + b_column] = result[0] + result[1] + result[2] + result[3];
+                C_data[a_row * n + b_column] = result[0] + result[1] + result[2] + result[3] + remainder;
             }
         }
     } else if (A->precision == FLOAT) {
@@ -73,11 +83,12 @@ void avx_matmul(matrix_2d *A, matrix_2d *B, matrix_2d *C) {
             // for each column of matrix B
             for (int b_column = 0; b_column < n; b_column++) {
                 __m256 sum = _mm256_setzero_ps();
+                int nonBlockElements = m % blockSize;
 
                 // for each block in row/column of A/B
                 // block here is of length 256
                 // only works on CPUs with AVX2 instruction set available
-                for (int block = 0; block < m; block += blockSize) {
+                for (int block = 0; block <= m - blockSize; block += blockSize) {
                     // Multiply sub-blocks
                     // for each element in matrix A block
                     __m256 avx_a = _mm256_loadu_ps(&A_data[a_row * m + block]);
@@ -85,10 +96,18 @@ void avx_matmul(matrix_2d *A, matrix_2d *B, matrix_2d *C) {
 
                     sum = _mm256_fmadd_ps(avx_a, avx_b, sum);
                 }
+
+                float remainder = 0.0;
+                if (nonBlockElements) {
+                    // accumulate the remaining iteratively
+                    for (int element = m - nonBlockElements; element < m; element++) {
+                        remainder += A_data[a_row * m + element] * B_data[b_column * m + element];
+                    }
+                }
                 float result[blockSize];
                 _mm256_storeu_ps(result, sum);
                 C_data[a_row * n + b_column] = result[0] + result[1] + result[2] + result[3] + result[4] + result[5] +
-                                               result[6] + result[7];
+                                               result[6] + result[7] + remainder;
             }
         }
     } else if (A->precision == INT) {
@@ -109,10 +128,12 @@ void avx_matmul(matrix_2d *A, matrix_2d *B, matrix_2d *C) {
             for (int b_column = 0; b_column < n; b_column++) {
                 __m256i sum = _mm256_setzero_si256();
 
+                int nonBlockElements = m % blockSize;
                 // for each block in row/column of A/B
                 // block here is of length 256
                 // only works on CPUs with AVX2 instruction set available
-                for (int block = 0; block < m; block += blockSize) {
+
+                for (int block = 0; block <= m - blockSize; block += blockSize) {
                     // load blocksize sub-vectors of each matrix
                     __m256i avx_a = _mm256_loadu_si256((__m256i *) &A_data[a_row * m + block]);
                     __m256i avx_b = _mm256_loadu_si256((__m256i *) &B_data[b_column * m + block]);
@@ -123,11 +144,19 @@ void avx_matmul(matrix_2d *A, matrix_2d *B, matrix_2d *C) {
                     // accumulate the product with the sum
                     sum = _mm256_add_epi32(sum, product);
                 }
+
+                int remainder = 0;
+                if (nonBlockElements) {
+                    // accumulate the remaining iteratively
+                    for (int element = m - nonBlockElements; element < m; element++) {
+                        remainder += A_data[a_row * m + element] * B_data[b_column * m + element];
+                    }
+                }
                 // roll the results up to single element
                 int result[blockSize];
                 _mm256_storeu_si256((__m256i *) result, sum);
                 C_data[a_row * n + b_column] = result[0] + result[1] + result[2] + result[3] + result[4] + result[5] +
-                                               result[6] + result[7];
+                                               result[6] + result[7] + remainder;
             }
         }
     }
