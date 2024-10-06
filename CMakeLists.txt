@@ -66,7 +66,9 @@ add_library(naive_matrix_multiply naive_matrix_multiply.c)
 ##### Matrix main executable
 # register main.c as an executable to compile
 add_executable(matrix main.c
-        matrix.c)
+        matrix.c
+        naive_memory_aligned_matrix_multiply.c
+        naive_memory_aligned_matrix_multiply.h)
 if (CMAKE_BUILD_TYPE STREQUAL "Release")
     # does WONDERS for avx (75% reduction in run time)
     # completely destroys block multiplication
@@ -106,7 +108,9 @@ add_executable(matrix_test matrix_test.c matrix.c
         gpu_matrix_multiply_tests.c
         gpu_matrix_multiply_tests.h
         avx_matrix_multiply_tests.c
-        avx_matrix_multiply_tests.h)
+        avx_matrix_multiply_tests.h
+        naive_memory_aligned_matrix_multiply.c
+        naive_memory_aligned_matrix_multiply.h)
 # tell cmake matrix_test executable has a dependency on the unity external project
 add_dependencies(matrix_test
         naive_matrix_multiply

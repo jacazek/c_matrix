@@ -18,7 +18,8 @@ typedef enum MATMUL_STRATEGY {
     NAIVE,
     BLOCK,
     AVX,
-    GPU
+    GPU,
+    NAIVE_MEMORY_ALIGNED,
 } MatmulStrategy;
 
 typedef struct matrix_2d {

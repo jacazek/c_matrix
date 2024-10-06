@@ -3,6 +3,7 @@
 //
 #include "stdio.h"
 #include "matrix_test.h"
+#include "naive_memory_aligned_matrix_multiply.h"
 #ifdef CUDA_SUPPORT
 #include "gpu_matrix_multiply_tests.h"
 #endif
@@ -104,6 +105,8 @@ void setUp() {
 
     matrix2D_fill(A, A_data_int);
     matrix2D_fill(B, B_data_int);
+    matrix2D_fill(C, C_data_int);
+
 
     A_double = matrix2D_new(double_precision, m, l);
     B_double = matrix2D_new(double_precision, n, m);
@@ -111,6 +114,7 @@ void setUp() {
 
     matrix2D_fill(A_double, A_data);
     matrix2D_fill(B_double, B_data);
+    matrix2D_fill(C_double, C_data);
 
     A_float = matrix2D_new(single_precision, m, l);
     B_float = matrix2D_new(single_precision, n, m);
@@ -118,6 +122,7 @@ void setUp() {
 
     matrix2D_fill(A_float, A_data_float);
     matrix2D_fill(B_float, B_data_float);
+    matrix2D_fill(C_float, C_data_float);
 }
 
 void tearDown() {
@@ -139,6 +144,23 @@ void naive_matmul_float_works_correctly() {
     TEST_ASSERT_FLOAT_ARRAY_WITHIN(.0001, C_data_float, C_float->data, C_float->y_length * C_float->x_length);
 }
 
+void naive_memory_aligned_matmul_works_correctly() {
+    naive_memory_aligned_matrix_multiply(A, B, C);
+
+    TEST_ASSERT_EQUAL_INT_ARRAY(C_data_int, C->data, C->y_length * C->x_length);
+}
+
+void naive_memory_aligned_matmul_double_works_correctly() {
+    naive_memory_aligned_matrix_multiply(A_double, B_double, C_double);
+    TEST_ASSERT_DOUBLE_ARRAY_WITHIN(.0001, C_data, C_double->data, C_double->y_length * C_double->x_length);
+}
+
+void naive_memory_aligned_matmul_float_works_correctly() {
+    naive_memory_aligned_matrix_multiply(A_float, B_float, C_float);
+    TEST_ASSERT_FLOAT_ARRAY_WITHIN(.0001, C_data_float, C_float->data, C_float->y_length * C_float->x_length);
+}
+
+
 void block_matmul_works_correctly() {
     matrix_matmul(A, B, C, BLOCK);
 
@@ -156,14 +178,17 @@ void block_matmul_float_works_correctly() {
 }
 
 void transpose_works() {
-    int size = 3;
-    int *data_to_transpose = malloc(sizeof(int) * size * size);
-    for (int i = 0; i < 9; i++) {
+    int size_y = 3;
+    int size_x = 4;
+
+    int *data_to_transpose = malloc(sizeof(int) * size_x * size_y);
+    for (int i = 0; i < size_x * size_y; i++) {
         data_to_transpose[i] = i + 1;
     }
-    int expected_output[] = {1, 4, 7, 2, 5, 8, 3, 6, 9};
 
-    matrix_2d *matrix_to_transpose = matrix2D_new(INT, size, size);
+    int expected_output[] = {1, 5, 9, 2, 6, 10, 3, 7, 11, 4, 8, 12};
+
+    matrix_2d *matrix_to_transpose = matrix2D_new(INT, size_x, size_y);
     matrix2D_fill(matrix_to_transpose, data_to_transpose);
 
     matrix2D_transpose(matrix_to_transpose);
@@ -172,14 +197,15 @@ void transpose_works() {
 }
 
 void transpose_double_works() {
-    int size = 3;
-    double *data_to_transpose = malloc(sizeof(double) * size * size);
-    for (int i = 0; i < 9; i++) {
+    int size_y = 3;
+    int size_x = 4;
+    double *data_to_transpose = malloc(sizeof(double) * size_x * size_y);
+    for (int i = 0; i < size_x * size_y; i++) {
         data_to_transpose[i] = (i + 1) * .1;
     }
-    double expected_output[] = {.1, .4, .7, .2, .5, .8, .3, .6, .9};
+    double expected_output[] = {.1, .5, .9, .2, .6, 1.0, .3, .7, 1.1, .4, .8, 1.2};
 
-    matrix_2d *matrix_to_transpose = matrix2D_new(DOUBLE, size, size);
+    matrix_2d *matrix_to_transpose = matrix2D_new(DOUBLE, size_x, size_y);
     matrix2D_fill(matrix_to_transpose, data_to_transpose);
 
     matrix2D_transpose(matrix_to_transpose);
@@ -193,6 +219,9 @@ int main() {
     RUN_TEST(naive_matmul_works_correctly);
     RUN_TEST(naive_matmul_double_works_correctly);
     RUN_TEST(naive_matmul_float_works_correctly);
+    RUN_TEST(naive_memory_aligned_matmul_works_correctly);
+    RUN_TEST(naive_memory_aligned_matmul_double_works_correctly);
+    RUN_TEST(naive_memory_aligned_matmul_float_works_correctly);
     RUN_TEST(block_matmul_works_correctly);
     RUN_TEST(block_matmul_double_works_correctly);
     RUN_TEST(block_matmul_float_works_correctly);

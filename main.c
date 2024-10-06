@@ -58,6 +58,21 @@ void *run_naive_test(void *data) {
     return NULL;
 }
 
+void *run_naive_mem_aligned_test(void *data) {
+    struct thread_data *thread_data = data;
+    matrix_2d *C = matrix2D_new(thread_data->A->precision, thread_data->B->x_length, thread_data->A->y_length);
+    printf("NAIVE_MEMORY_ALIGNED matmul starting...\n");
+    struct timespec start, end;
+    clock_gettime(CLOCK_MONOTONIC, &start);
+    matrix_matmul(thread_data->A, thread_data->B, C, NAIVE_MEMORY_ALIGNED);
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    double time_taken = (end.tv_sec - start.tv_sec) +
+                        (end.tv_nsec - start.tv_nsec) / 1e9;
+    printf("NAIVE_MEMORY_ALIGNED elapsed time: %f seconds\n", time_taken);
+    matrix2D_destroy(&C);
+    return NULL;
+}
+
 void *run_block_test(void *data) {
     struct thread_data *thread_data = data;
     matrix_2d *C = matrix2D_new(thread_data->A->precision, thread_data->B->x_length, thread_data->A->y_length);
@@ -75,17 +90,17 @@ void *run_block_test(void *data) {
 
 void *run_avx_test(void *data) {
     struct thread_data *thread_data = data;
-    matrix_2d *B_clone = matrix2D_copy(thread_data->B);
+    // matrix_2d *B_clone = matrix2D_copy(thread_data->B);
     matrix_2d *C = matrix2D_new(thread_data->A->precision, thread_data->B->x_length, thread_data->A->y_length);
     printf("AVX matmul starting...\n");
     struct timespec start, end;
     clock_gettime(CLOCK_MONOTONIC, &start);
-    matrix_matmul(thread_data->A, B_clone, C, AVX);
+    matrix_matmul(thread_data->A, thread_data->B, C, AVX);
     clock_gettime(CLOCK_MONOTONIC, &end);
     double time_taken = (end.tv_sec - start.tv_sec) +
                         (end.tv_nsec - start.tv_nsec) / 1e9;
     printf("AVX elapsed time: %f seconds\n", time_taken);
-    matrix2D_destroy(&B_clone);
+
     matrix2D_destroy(&C);
     return NULL;
 }
@@ -126,7 +141,7 @@ int main() {
         .A = A,
         .B = B,
     };
-    int number_of_threads = 2;
+    int number_of_threads = 3;
 #ifdef AVX_SUPPORT
     number_of_threads++;
 #endif
@@ -136,12 +151,13 @@ int main() {
 
     pthread_t threads[number_of_threads];
     pthread_create(&threads[0], NULL, run_naive_test, &thread_data);
-    pthread_create(&threads[1], NULL, run_block_test, &thread_data);
+    pthread_create(&threads[1], NULL, run_naive_mem_aligned_test, &thread_data);
+    pthread_create(&threads[2], NULL, run_block_test, &thread_data);
 #ifdef AVX_SUPPORT
-    pthread_create(&threads[2], NULL, run_avx_test, &thread_data);
+    pthread_create(&threads[3], NULL, run_avx_test, &thread_data);
 #endif
 #ifdef CUDA_SUPPORT
-    pthread_create(&threads[3], NULL, run_gpu_test, &thread_data);
+    pthread_create(&threads[4], NULL, run_gpu_test, &thread_data);
 #endif
 
     for (int i = 0; i < number_of_threads; i++) {

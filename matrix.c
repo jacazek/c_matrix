@@ -4,6 +4,7 @@
 
 #include "matrix.h"
 #include <stdio.h>
+#include "naive_memory_aligned_matrix_multiply.h"
 #ifdef CUDA_SUPPORT
 #include "gpu_matrix_multiply.h"
 #endif
@@ -74,7 +75,7 @@ void matrix2D_set_element(matrix_2d *matrix, size_t x, size_t y, void *data) {
 
 matrix_2d *matrix2D_copy(const matrix_2d *matrix) {
     void *copy_data = malloc(matrix->data_size * matrix->x_length * matrix->y_length);
-    memcpy(copy_data, matrix->data, matrix->data_size);
+    memcpy(copy_data, matrix->data, matrix->x_length * matrix->y_length * matrix->data_size);
 
     matrix_2d *copy_matrix = malloc(sizeof(matrix_2d));
     copy_matrix->precision = matrix->precision;
@@ -130,6 +131,8 @@ void matrix_matmul(matrix_2d *A, matrix_2d *B, matrix_2d *C, MatmulStrategy stra
         case BLOCK:
             block_matmul(A, B, C, 64);
             break;
+        case NAIVE_MEMORY_ALIGNED:
+            naive_memory_aligned_matrix_multiply(A, B, C);
 #ifdef AVX_SUPPORT
         case AVX:
             avx_matmul(A, B, C);
@@ -170,9 +173,9 @@ void matrix2D_transpose(matrix_2d *matrix) {
     if (matrix->precision == DOUBLE) {
         double *temp = malloc(matrix->data_size * matrix->x_length * matrix->y_length);
         double *data = matrix->data;
-        for (int i = 0; i < matrix->x_length; i++) {
-            for (int j = 0; j < matrix->y_length; j++) {
-                temp[j * matrix->x_length + i] = data[i * matrix->y_length + j];
+        for (int i = 0; i < matrix->y_length; i++) {
+            for (int j = 0; j < matrix->x_length; j++) {
+                temp[j * matrix->y_length + i] = data[i * matrix->x_length + j];
             }
         }
         matrix->data = temp;
@@ -192,7 +195,7 @@ void matrix2D_transpose(matrix_2d *matrix) {
         float *data = matrix->data;
         for (int i = 0; i < matrix->y_length; i++) {
             for (int j = 0; j < matrix->x_length; j++) {
-                temp[j * matrix->x_length + i] = data[i * matrix->x_length + j];
+                temp[j * matrix->y_length + i] = data[i * matrix->x_length + j];
             }
         }
         matrix->data = temp;
