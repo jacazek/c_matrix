@@ -6,17 +6,19 @@
 
 void block_matmul(matrix_2d *A, matrix_2d *B, matrix_2d *C, int blockSize) {
     check_matrix_compatibility(A, B, C);
+    matrix_2d *B_copy = matrix2D_copy(B);
+    matrix2D_transpose(B_copy);
 
-    // number of columns in matrix A (row) and rows in matrix B
-    int m = A->x_length;
     // number of rows (column) in matrix A
     int l = A->y_length;
+    // number of columns in matrix A (row) and rows in matrix B
+    int m = A->x_length;
     // number of columns in matrix B
-    int n = B->x_length;
+    int n = B_copy->y_length;
 
     if (A->precision == DOUBLE) {
         double *A_data = A->data;
-        double *B_data = B->data;
+        double *B_data = B_copy->data;
         double *C_data = C->data;
 
         // zero the output matrix
@@ -38,7 +40,7 @@ void block_matmul(matrix_2d *A, matrix_2d *B, matrix_2d *C, int blockSize) {
                         for (int x = xx; x < xx + blockSize && x < n; x++) {
                             double sum = C_data[y * n + x]; // Start with current value in C
                             for (int z = zz; z < zz + blockSize && z < m; z++) {
-                                sum += A_data[y * m + z] * B_data[z * n + x];
+                                sum += A_data[y * m + z] * B_data[x * m + z];
                             }
                             C_data[y * n + x] = sum;
                         }

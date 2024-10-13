@@ -129,7 +129,7 @@ void matrix_matmul(matrix_2d *A, matrix_2d *B, matrix_2d *C, MatmulStrategy stra
             naive_matmul(A, B, C);
             break;
         case BLOCK:
-            block_matmul(A, B, C, 64);
+            block_matmul(A, B, C, 512);
             break;
         case NAIVE_MEMORY_ALIGNED:
             naive_memory_aligned_matrix_multiply(A, B, C);

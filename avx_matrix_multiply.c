@@ -5,7 +5,6 @@
 #include "avx_matrix_multiply.h"
 #include "immintrin.h"
 
-
 void avx_double_matmul(matrix_2d *A, matrix_2d *B, matrix_2d *C, int m, int l, int n) {
     double *A_data = A->data;
     double *B_data = B->data;
@@ -137,12 +136,12 @@ void avx_matmul(matrix_2d *A, matrix_2d *B, matrix_2d *C) {
     matrix_2d *B_copy = matrix2D_copy(B);
     matrix2D_transpose(B_copy);
 
-    // number of columns in matrix A (row) and rows in matrix B
-    int m = A->x_length;
     // number of rows (column) in matrix A
     int l = A->y_length;
-    // number of columns in matrix B
-    int n = B_copy->x_length;
+    // number of columns in matrix A (row) and rows in matrix B
+    int m = A->x_length;
+    // number of columns in matrix B (it hass been transposed)
+    int n = B_copy->y_length;
 
     memset(C->data, 0, C->x_length * C->y_length * C->data_size);
 

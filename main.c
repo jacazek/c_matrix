@@ -120,10 +120,44 @@ void *run_gpu_test(void *data) {
     return NULL;
 }
 
+void run_test(void *(test)(void *), struct thread_data *thread_data) {
+    pthread_t thread;
+    pthread_create(&thread, NULL, test, thread_data);
+    pthread_join(thread, NULL);
+}
 
-int main() {
-    clock_t start, end;
-    double cpu_time_used;
+void run_all_tests(struct thread_data *thread_data) {
+    int number_of_threads = 3;
+#ifdef AVX_SUPPORT
+    number_of_threads++;
+#endif
+#ifdef CUDA_SUPPORT
+    number_of_threads++;
+#endif
+
+    pthread_t threads[number_of_threads];
+    pthread_create(&threads[0], NULL, run_naive_test, thread_data);
+    pthread_create(&threads[1], NULL, run_naive_mem_aligned_test, thread_data);
+    pthread_create(&threads[2], NULL, run_block_test, thread_data);
+#ifdef AVX_SUPPORT
+    pthread_create(&threads[3], NULL, run_avx_test, thread_data);
+#endif
+#ifdef CUDA_SUPPORT
+    pthread_create(&threads[4], NULL, run_gpu_test, thread_data);
+#endif
+
+    for (int i = 0; i < number_of_threads; i++) {
+        pthread_join(threads[i], NULL);
+    }
+}
+
+
+int main(int argc, char **argv) {
+    char *strategy = "all";
+    if (argc >= 2) {
+        strategy = argv[1];
+    }
+
     int l = 2048;
     int m = 2048;
     int n = 2048;
@@ -141,28 +175,29 @@ int main() {
         .A = A,
         .B = B,
     };
-    int number_of_threads = 3;
-#ifdef AVX_SUPPORT
-    number_of_threads++;
-#endif
-#ifdef CUDA_SUPPORT
-    number_of_threads++;
-#endif
 
-    pthread_t threads[number_of_threads];
-    pthread_create(&threads[0], NULL, run_naive_test, &thread_data);
-    pthread_create(&threads[1], NULL, run_naive_mem_aligned_test, &thread_data);
-    pthread_create(&threads[2], NULL, run_block_test, &thread_data);
-#ifdef AVX_SUPPORT
-    pthread_create(&threads[3], NULL, run_avx_test, &thread_data);
-#endif
-#ifdef CUDA_SUPPORT
-    pthread_create(&threads[4], NULL, run_gpu_test, &thread_data);
-#endif
-
-    for (int i = 0; i < number_of_threads; i++) {
-        pthread_join(threads[i], NULL);
+    if (strcmp(strategy, "naive") == 0) {
+        run_test(run_naive_test, &thread_data);
+    } else if (strcmp(strategy, "block") == 0) {
+        run_test(run_block_test, &thread_data);
+    } else if (strcmp(strategy, "naive_memory_aligned") == 0) {
+        run_test(run_naive_mem_aligned_test, &thread_data);
     }
+
+#ifdef AVX_SUPPORT
+    else if (strcmp(strategy, "avx") == 0) {
+        run_test(run_avx_test, &thread_data);
+    }
+#endif
+#ifdef CUDA_SUPPORT
+    else if (strcmp(strategy, "gpu") == 0) {
+        run_test(run_gpu_test, &thread_data);
+    }
+#endif
+    else {
+        run_all_tests(&thread_data);
+    }
+    printf("finished\n");
     //
     // printf("NAIVE matmul starting...\n");
     // start = clock();
