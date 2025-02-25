@@ -1,11 +1,24 @@
 cmake_minimum_required(VERSION 3.26)
-project(matrix CUDA C)
+set(ROCM_ROOT "/opt/rocm")
+project(matrix HIP C)
 enable_testing()
-set(CMAKE_CUDA_STANDARD 17)
-set(CMAKE_CUDA_ARCHITECTURES "70;89")
 
-option(CUDA_SUPPORT "Enable CUDA support" ON)
+find_package(hip REQUIRED)
+message(STATUS "HIP found: ${HIP_FOUND}")
+
+#option(CUDA_SUPPORT "Enable CUDA support" ON)
+option(HIP_SUPPORT "Enable HIP support" ON)
 option(AVX_SUPPORT "Enable AVX support" ON)
+
+#if (CUDA_SUPPORT)
+#    set(CMAKE_CUDA_STANDARD 17)
+#    set(CMAKE_CUDA_ARCHITECTURES "70;89")
+#endif ()
+
+#if (HIP_SUPPORT)
+#
+#endif()
+
 
 message(STATUS $ENV{LD_LIBRARY_PATH})
 include(ExternalProject)
@@ -34,13 +47,24 @@ include_directories(${EXTERNAL_INSTALL_LOCATION}/include)
 link_directories(${EXTERNAL_INSTALL_LOCATION}/lib64)
 
 
-if (CUDA_SUPPORT)
-    message(STATUS "CUDA SUPPORT ENABLED")
+#if (CUDA_SUPPORT)
+#    message(STATUS "CUDA SUPPORT ENABLED")
+#    # provide flag to code enabling GPU support
+#    add_definitions(-DCUDA_SUPPORT)
+#    ##### CUDA matrix multiply static library (archive)
+#    add_library(gpu_matrix_multiply gpu_matrix_multiply.cu)
+#    target_link_libraries(gpu_matrix_multiply PRIVATE cuda cudart)
+#else ()
+#    message(STATUS "CUDA SUPPORT DISABLED")
+#endif ()
+
+if (HIP_SUPPORT)
+    message(STATUS "HIP SUPPORT ENABLED")
     # provide flag to code enabling GPU support
-    add_definitions(-DCUDA_SUPPORT)
+#    add_definitions(-DCUDA_SUPPORT)
     ##### CUDA matrix multiply static library (archive)
-    add_library(gpu_matrix_multiply gpu_matrix_multiply.cu)
-    target_link_libraries(gpu_matrix_multiply PRIVATE cuda cudart)
+    add_library(gpu_matrix_multiply gpu_matrix_multiply.hip)
+#    target_link_libraries(gpu_matrix_multiply PRIVATE hip::host)
 else ()
     message(STATUS "CUDA SUPPORT DISABLED")
 endif ()
@@ -80,16 +104,29 @@ add_dependencies(matrix
 target_link_libraries(matrix
         naive_matrix_multiply
         block_matrix_multiply)
-if (CUDA_SUPPORT)
+
+#if (CUDA_SUPPORT)
+#    add_dependencies(matrix
+#            gpu_matrix_multiply)
+#    target_link_libraries(matrix
+#            gpu_matrix_multiply
+#            cudart)
+#    # enable cuda support
+#    set_target_properties(matrix PROPERTIES
+#            CUDA_SEPARABLE_COMPILATION ON  # For separable compilation (optional)
+#            BUILD_RPATH "/usr/local/cuda/lib64"
+#    )
+#endif ()
+
+if (HIP_SUPPORT)
     add_dependencies(matrix
             gpu_matrix_multiply)
     target_link_libraries(matrix
-            gpu_matrix_multiply
-            cudart)
+            gpu_matrix_multiply)
     # enable cuda support
     set_target_properties(matrix PROPERTIES
             CUDA_SEPARABLE_COMPILATION ON  # For separable compilation (optional)
-            BUILD_RPATH "/usr/local/cuda/lib64"
+            BUILD_RPATH "/usr/local/hip/lib64"
     )
 endif ()
 
@@ -122,8 +159,22 @@ target_link_libraries(matrix_test
         block_matrix_multiply
         ${EXTERNAL_INSTALL_LOCATION}/lib64/libunity.a)
 
-if (CUDA_SUPPORT)
-    add_definitions(-DCUDA_SUPPORT)
+#if (CUDA_SUPPORT)
+#    add_definitions(-DCUDA_SUPPORT)
+#    add_dependencies(matrix_test
+#            gpu_matrix_multiply)
+#    target_link_libraries(matrix_test
+#            gpu_matrix_multiply
+#            cudart)
+#    # enable cuda support
+#    set_target_properties(matrix_test PROPERTIES
+#            CUDA_SEPARABLE_COMPILATION ON  # For separable compilation (optional)
+#            BUILD_RPATH "/usr/local/cuda/lib64"
+#    )
+#endif ()
+
+if (HIP_SUPPORT)
+    add_definitions(-DCUDA_SUPPORT) # maybe refactor to hip
     add_dependencies(matrix_test
             gpu_matrix_multiply)
     target_link_libraries(matrix_test
@@ -132,7 +183,7 @@ if (CUDA_SUPPORT)
     # enable cuda support
     set_target_properties(matrix_test PROPERTIES
             CUDA_SEPARABLE_COMPILATION ON  # For separable compilation (optional)
-            BUILD_RPATH "/usr/local/cuda/lib64"
+            BUILD_RPATH "/usr/local/hip/lib64"
     )
 endif ()
 
